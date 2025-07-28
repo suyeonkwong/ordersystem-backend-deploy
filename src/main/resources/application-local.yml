@@ -7,7 +7,7 @@ spring:
       on-profile: local
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3308/ordersystem
+    url: jdbc:mariadb://localhost:3307/ordersystem
     username: root
     password: 1234
   jpa:
@@ -17,3 +17,15 @@ spring:
     hibernate:
       ddl-auto: create
     show__sql: true
+  servlet:
+    multipart:
+      # spring의 디폴트 사이즈 10MB
+      max-file-size: 1000MB
+      max-request-size: 1000MB
+logging:
+  level:
+    root: info
+jwt:
+  expirationAt: 1000
+  secretKeyAt: beyondaccesstokensecretkeybeyondaccesstokensecretkeybeyondaccesstokensecretkey
+
