@@ -3,9 +3,7 @@ package com.example.ordersystem.member.controller;
 import com.example.ordersystem.common.auth.JwtTokenProvider;
 import com.example.ordersystem.common.dto.CommonDto;
 import com.example.ordersystem.member.domain.Member;
-import com.example.ordersystem.member.dto.MemberCreateRequest;
-import com.example.ordersystem.member.dto.MemberLoginRequest;
-import com.example.ordersystem.member.dto.MemberLoginResponse;
+import com.example.ordersystem.member.dto.*;
 import com.example.ordersystem.member.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,19 +40,30 @@ public class MemberController {
         /// at 토큰 생성
         String refreshToken = jwtTokenProvider.createRtToken(member);
         return new ResponseEntity<>(
-                new CommonDto(new MemberLoginResponse(accessToken, ""), HttpStatus.OK.value(), "로그인성공"),
+                new CommonDto(new MemberLoginResponse(accessToken, refreshToken), HttpStatus.OK.value(), "로그인성공"),
                 HttpStatus.OK);
     }
 
-    /// rt를 통한 갱신 요청
+    // rt를 통한 at 갱신 요청
     @PostMapping("/refresh-at")
-    public ResponseEntity<?> generatedNewAt() {
-        /// rt검증 로직
+    public ResponseEntity<?> generateNewAt(@RequestBody RefreshTokenDto refreshTokenDto){
+        /// rt 검증 로직
+        Member member = jwtTokenProvider.validateRt(refreshTokenDto.getRefreshToken());
 
-        /// at신규 생성
-        return null;
+        /// at 신규 생성
+        String accessToken = jwtTokenProvider.createAtToken(member);
+        MemberLoginResponse loginResDto = MemberLoginResponse.builder()
+                .accessToken(accessToken)
+                .build();
+
+        return new ResponseEntity<>(
+                CommonDto.builder()
+                        .result(loginResDto)
+                        .statusCode(HttpStatus.OK.value())
+                        .statusMessage("AT 재발급 완료")
+                        .build()
+                , HttpStatus.OK);
     }
-
 
     @GetMapping("/list")
     @PreAuthorize("hasRole('ADMIN')")
@@ -74,4 +83,5 @@ public class MemberController {
         memberService.delete();
         return new ResponseEntity<>(CommonDto.builder().result("ok").statusCode(HttpStatus.OK.value()).statusMessage("회원탈퇴완료").build(), HttpStatus.OK);
     }
+
 }

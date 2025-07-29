@@ -14,7 +14,7 @@ import org.hibernate.annotations.Where;
 @NoArgsConstructor
 @AllArgsConstructor
 /// jpql을 제외하고 모든 조회쿼리에 where del_yn = "N"을 붙이는 효과
-@Where(clause = "del_yn = 'N'")
+//@Where(clause = "del_yn = 'N'")
 public class Member {
 
     @Id
