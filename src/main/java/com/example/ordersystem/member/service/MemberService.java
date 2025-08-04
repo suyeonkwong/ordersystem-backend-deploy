@@ -24,6 +24,9 @@ public class MemberService {
 
     @Transactional
     public Long saveMember(final MemberCreateRequest memberCreateRequest) {
+        if(memberRepository.findByEmail(memberCreateRequest.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("이미 가입된 회원 이메일 입니다.");
+        }
         final Member member = memberCreateRequest.toEntity(passwordEncoder.encode(memberCreateRequest.getPassword()));
         return memberRepository.save(member).getId();
     }

@@ -1,25 +1,23 @@
 package com.example.ordersystem.product.dto;
 
 import com.example.ordersystem.member.domain.Member;
-import com.example.ordersystem.product.entity.Product;
+import com.example.ordersystem.product.domain.Product;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class ProductCreateDto {
     private String name;
     private String category;
     private int price;
     private int stockQuantity;
-    private MultipartFile multipartFile;
+    private MultipartFile productImage;
 
-    public Product toEntity(Member member) {
+    public Product toEntity(Member member){
         return Product.builder()
                 .name(this.name)
                 .category(this.category)
@@ -28,4 +26,5 @@ public class ProductCreateDto {
                 .member(member)
                 .build();
     }
+
 }

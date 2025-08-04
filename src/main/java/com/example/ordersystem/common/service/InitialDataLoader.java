@@ -1,4 +1,4 @@
-package com.example.ordersystem.common;
+package com.example.ordersystem.common.service;
 
 import com.example.ordersystem.member.domain.Member;
 import com.example.ordersystem.member.domain.Role;

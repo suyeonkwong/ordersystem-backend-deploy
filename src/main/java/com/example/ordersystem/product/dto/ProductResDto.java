@@ -1,15 +1,15 @@
 package com.example.ordersystem.product.dto;
 
-import com.example.ordersystem.product.entity.Product;
+import com.example.ordersystem.product.domain.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Builder
 public class ProductResDto {
     private Long id;
     private String name;
@@ -17,7 +17,7 @@ public class ProductResDto {
     private int price;
     private int stockQuantity;
 
-    public static ProductResDto fromEntity(Product product) {
+    public static ProductResDto fromEntity(Product product){
         return ProductResDto.builder()
                 .id(product.getId())
                 .name(product.getName())

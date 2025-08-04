@@ -1,6 +1,7 @@
-package com.example.ordersystem.common;
+package com.example.ordersystem.common.service;
 
 import com.example.ordersystem.common.dto.CommonErrorDto;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @Slf4j
 @ControllerAdvice
+@Hidden /// swagger 에서 제외
 public class CommonExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
