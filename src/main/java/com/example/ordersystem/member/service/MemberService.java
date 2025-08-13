@@ -56,6 +56,11 @@ public class MemberService {
     }
 
     @Transactional
+    public MemberResponse getMemberDetail(long id) {
+        return memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원 입니다.")).fromEntity();
+    }
+
+    @Transactional
     public MemberResponse getMemberDetail(String email) {
         return memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("이메일이 유효하지 않습니다.")).fromEntity();
     }

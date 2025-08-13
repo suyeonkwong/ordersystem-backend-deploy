@@ -1,5 +1,6 @@
 package com.example.ordersystem.ordering.service;
 
+import com.example.ordersystem.common.service.SseAlarmService;
 import com.example.ordersystem.common.service.StockInventoryService;
 import com.example.ordersystem.common.service.StockRabbitMqService;
 import com.example.ordersystem.member.domain.Member;
@@ -31,13 +32,15 @@ public class OrderingService {
     private final ProductRepository productRepository;
     private final StockInventoryService stockInventoryService;
     private final StockRabbitMqService stockRabbitMqService;
+    private final SseAlarmService sseAlarmService;
 
-    public OrderingService(OrderingRepository orderingRepository, MemberRepository memberRepository, ProductRepository productRepository, StockInventoryService stockInventoryService, StockRabbitMqService stockRabbitMqService) {
+    public OrderingService(OrderingRepository orderingRepository, MemberRepository memberRepository, ProductRepository productRepository, StockInventoryService stockInventoryService, StockRabbitMqService stockRabbitMqService, SseAlarmService sseAlarmService) {
         this.orderingRepository = orderingRepository;
         this.memberRepository = memberRepository;
         this.productRepository = productRepository;
         this.stockInventoryService = stockInventoryService;
         this.stockRabbitMqService = stockRabbitMqService;
+        this.sseAlarmService = sseAlarmService;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)    /// 격리레벨을 낮춤으로서, 성능향상과 lock 관련 문제 원천 차단
@@ -70,6 +73,8 @@ public class OrderingService {
             stockRabbitMqService.publish(orderCreateDto.getProductId(), orderCreateDto.getProductCount());
         }
 
+        // 주문 성공 시 admin 유저에게 알림 메시지 전송
+        sseAlarmService.publishMessage("admin@naver.com", email, ordering.getId());
         return id;
     }
 

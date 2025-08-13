@@ -71,6 +71,12 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.OK).body(memberService.getMemberList());
     }
 
+    @GetMapping("/detail/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getMemberDetail(@PathVariable long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(memberService.getMemberDetail(id));
+    }
+
     @GetMapping("/myinfo")
     public ResponseEntity<?> getMyInfo() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
