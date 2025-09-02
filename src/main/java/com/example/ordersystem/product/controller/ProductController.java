@@ -28,7 +28,7 @@ public class ProductController {
                 CommonDto.builder()
                         .result(id)
                         .statusCode(HttpStatus.CREATED.value())
-                        .statusMessage("상품등록 완료2")
+                        .statusMessage("상품등록 완료222")
                         .build()
                 , HttpStatus.CREATED);
     }
