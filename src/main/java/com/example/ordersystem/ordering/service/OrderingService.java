@@ -1,8 +1,6 @@
 package com.example.ordersystem.ordering.service;
 
 import com.example.ordersystem.common.service.SseAlarmService;
-import com.example.ordersystem.common.service.StockInventoryService;
-import com.example.ordersystem.common.service.StockRabbitMqService;
 import com.example.ordersystem.member.domain.Member;
 import com.example.ordersystem.member.repository.MemberRepository;
 import com.example.ordersystem.ordering.domain.OrderDetail;
@@ -30,16 +28,12 @@ public class OrderingService {
     private final OrderingRepository orderingRepository;
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
-    private final StockInventoryService stockInventoryService;
-    private final StockRabbitMqService stockRabbitMqService;
     private final SseAlarmService sseAlarmService;
 
-    public OrderingService(OrderingRepository orderingRepository, MemberRepository memberRepository, ProductRepository productRepository, StockInventoryService stockInventoryService, StockRabbitMqService stockRabbitMqService, SseAlarmService sseAlarmService) {
+    public OrderingService(OrderingRepository orderingRepository, MemberRepository memberRepository, ProductRepository productRepository, SseAlarmService sseAlarmService) {
         this.orderingRepository = orderingRepository;
         this.memberRepository = memberRepository;
         this.productRepository = productRepository;
-        this.stockInventoryService = stockInventoryService;
-        this.stockRabbitMqService = stockRabbitMqService;
         this.sseAlarmService = sseAlarmService;
     }
 
@@ -56,10 +50,10 @@ public class OrderingService {
             Product product = productRepository.findById(orderCreateDto.getProductId()).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 상품입니다."));
 
             /// redis 에서 재고수량 확인 및 재고수량 감소처리
-            int newQuantity = stockInventoryService.decreaseStockQuantity(product.getId(), orderCreateDto.getProductCount());
-            if(newQuantity < 0) {
-                throw new IllegalArgumentException("재고부족");
-            }
+//            int newQuantity = stockInventoryService.decreaseStockQuantity(product.getId(), orderCreateDto.getProductCount());
+//            if(newQuantity < 0) {
+//                throw new IllegalArgumentException("재고부족");
+//            }
 
             /// 1. 동시에 접근하는 상황에서 update 값에 저합성이 깨지고 갱신이상이 발생
             /// 2. spring 버전이나 mysql 버전에 따라 jpa 에서 강제에러(deadlock)를 유발시켜 대부분의 요청실패 발생
@@ -70,9 +64,40 @@ public class OrderingService {
                     .build();
             ordering.getOrderDetailList().add(orderDetail);     // cascade 사용
             /// rdb에 사후 update를 위한 메시지 발행(비동기 처리)
-            stockRabbitMqService.publish(orderCreateDto.getProductId(), orderCreateDto.getProductCount());
+//            stockRabbitMqService.publish(orderCreateDto.getProductId(), orderCreateDto.getProductCount());
         }
 
+        // 주문 성공 시 admin 유저에게 알림 메시지 전송
+        sseAlarmService.publishMessage("admin@naver.com", email, ordering.getId());
+        return id;
+    }
+
+    public Long create(List<OrderCreateDto> orderCreateDtoList) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다."));
+        Ordering ordering = Ordering.builder()
+                .member(member)
+                .build();
+        Long id = orderingRepository.save(ordering).getId();
+
+        for (OrderCreateDto orderCreateDto : orderCreateDtoList) {
+            Product product = productRepository.findById(orderCreateDto.getProductId()).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 상품입니다."));
+
+            /// redis 에서 재고수량 확인 및 재고수량 감소처리
+//            int newQuantity = stockInventoryService.decreaseStockQuantity(product.getId(), orderCreateDto.getProductCount());
+//            if(newQuantity < 0) {
+//                throw new IllegalArgumentException("재고부족");
+//            }
+
+            /// 1. 동시에 접근하는 상황에서 update 값에 저합성이 깨지고 갱신이상이 발생
+            /// 2. spring 버전이나 mysql 버전에 따라 jpa 에서 강제에러(deadlock)를 유발시켜 대부분의 요청실패 발생
+            OrderDetail orderDetail = OrderDetail.builder()
+                    .product(product)
+                    .quantity(orderCreateDto.getProductCount())
+                    .ordering(ordering)
+                    .build();
+            ordering.getOrderDetailList().add(orderDetail);     // cascade 사용
+        }
         // 주문 성공 시 admin 유저에게 알림 메시지 전송
         sseAlarmService.publishMessage("admin@naver.com", email, ordering.getId());
         return id;

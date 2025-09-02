@@ -35,30 +35,10 @@ public class RedisConfig {
     }
 
     @Bean
-    @Qualifier("stockInventory")
-    public RedisConnectionFactory stockConnectionFactory() {
-        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
-        configuration.setHostName(host);
-        configuration.setPort(port);
-        configuration.setDatabase(1);
-        return new LettuceConnectionFactory(configuration);
-    }
-
-    @Bean
     @Qualifier("rtInventory")
     /// Bean 들끼리 서로 의존성을 주입받을때 메서드 파라미터로도 주입가능
     /// template 중에 무조건 redisTemplate 이라는 메서드 명이 반드시 1개는 있어야 함.
     public RedisTemplate<String, String> redisTemplate(@Qualifier("rtInventory") RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        return redisTemplate;
-    }
-
-    @Bean
-    @Qualifier("stockInventory")
-    public RedisTemplate<String, String> stockTemplate(@Qualifier("stockInventory") RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
@@ -91,7 +71,7 @@ public class RedisConfig {
     @Bean
     @Qualifier("ssePubSub")
     public RedisMessageListenerContainer redisMessageListenerContainer(
-            @Qualifier("stockInventory") RedisConnectionFactory redisConnectionFactory,
+            @Qualifier("ssePubSub") RedisConnectionFactory redisConnectionFactory,
             MessageListenerAdapter messageListenerAdapter){
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(redisConnectionFactory);
